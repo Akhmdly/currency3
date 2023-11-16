@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let fromCurrency = "RUB";
     let toCurrency = "USD";
     function changeCurrency(from, to, amount, input) {
-        fetch(`https://v6.exchangerate-api.com/v6/b374be13278c27af73014a75/latest/${from}`)
+        fetch(`https://v6.exchangerate-api.com/v6/fc1d3d45e0da7c2d251b4748/latest/${from}`)
             .then(response => response.json())
             .then(data => {
                 let exchangeRate = data.conversion_rates[to];
