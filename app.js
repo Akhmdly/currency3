@@ -1,64 +1,76 @@
 document.addEventListener("DOMContentLoaded", function() {
-    let myInputs = document.querySelectorAll(".myInput");
-    let fromLi = document.querySelectorAll(".li1");
-    let toLi = document.querySelectorAll(".li2");
-    let ul1Lis = document.querySelectorAll('.ul1 button');
-    let ul2Lis = document.querySelectorAll('.ul2 button');
+    let amountInputs = document.querySelectorAll(".inp");
+    let fromCurrencyButtons = document.querySelectorAll(".v1");
+    let toCurrencyButtons = document.querySelectorAll(".v2");
+    let allLiElements = document.querySelectorAll('.val1 button');
+    let allLiElements2 = document.querySelectorAll('.val2 button');
+    
     let fromCurrency = "RUB";
     let toCurrency = "USD";
-    function changeCurrency(from, to, amount, input) {
+    
+    amountInputs.forEach(input => {
+        input.addEventListener("input", function() {
+            this.value = this.value.replace(/[^0-9.]/g, ''); 
+            if (this.value.split('.').length > 2) {
+                this.value = this.value.slice(0, this.value.lastIndexOf('.'));
+            }
+        });
+    });
+    
+    function getExchangeRate(from, to, amount, input) {
         fetch(`https://v6.exchangerate-api.com/v6/fc1d3d45e0da7c2d251b4748/latest/${from}`)
             .then(response => response.json())
             .then(data => {
                 let exchangeRate = data.conversion_rates[to];
                 let enteredAmount = parseFloat(amount);
-
+    
                 if (!isNaN(enteredAmount)) {
                     let convertedAmount = (enteredAmount * exchangeRate).toFixed(4);
                     input.value = convertedAmount;
-                    document.getElementById('input1pId').innerText = `1 ${from} = ${exchangeRate.toFixed(4)} ${to}`;
-                    document.getElementById('input2pId').innerText = `1 ${to} = ${(1 / exchangeRate).toFixed(4)} ${from}`;
+    
+                    document.getElementById('rate1').innerText = `1 ${from} = ${exchangeRate.toFixed(4)} ${to}`;
+                    document.getElementById('rate2').innerText = `1 ${to} = ${(1 / exchangeRate).toFixed(4)} ${from}`;
                 } else {
-                    //input.value = ""; 
+                    //input.value = "";
                 }
             })
             .catch(error => {
-                console.log("Error!", error);
+                console.log("Valyuta məzənnələrini əldə edərkən xəta baş verdi:", error);
             });
     }
+    
     function updateCurrency(event) {
-        if (event.target.classList.contains("li1")) {
+        if (event.target.classList.contains("v1")) {
             fromCurrency = event.target.innerText;
-            buttonClick(event.target, 'ul1');
-        } else if (event.target.classList.contains("li2")) {
+            handleButtonClick(event.target, 'val1');
+        } else if (event.target.classList.contains("v2")) {
             toCurrency = event.target.innerText;
-            buttonClick(event.target, 'ul2');
+            handleButtonClick(event.target, 'val2');
         }
-        changeCurrency(fromCurrency, toCurrency, myInputs[0].value, myInputs[1]);
+        getExchangeRate(fromCurrency, toCurrency, amountInputs[0].value, amountInputs[1]);
     }
-    fromLi.forEach(button => {
+    
+    fromCurrencyButtons.forEach(button => {
         button.addEventListener("click", updateCurrency);
     });
-    toLi.forEach(button => {
+    
+    toCurrencyButtons.forEach(button => {
         button.addEventListener("click", updateCurrency);
     });
-    myInputs.forEach((input, index) => {
+    
+    amountInputs.forEach((input, index) => {
         input.addEventListener("input", () => {
-            let trimmedValue = input.value.trim();
-            let updateValue = trimmedValue.replace(/[^\d.]/g, '');
-            input.value = updateValue;   
-            if (!updateValue.includes('.') && updateValue.length > 1) {
-                updateValue = updateValue.replace(/^0+/, ''); 
-            }        
             if (index === 0) {
-                changeCurrency(fromCurrency, toCurrency, input.value, myInputs[1]);
+                getExchangeRate(fromCurrency, toCurrency, input.value, amountInputs[1]);
             } else {
-                changeCurrency(toCurrency, fromCurrency, input.value, myInputs[0]);
+                getExchangeRate(toCurrency, fromCurrency, input.value, amountInputs[0]);
             }
         });
     });
-    function buttonClick(item, ulClass) {
-        const activeButtons = document.querySelectorAll(`.${ulClass} .active`);
+    
+    function handleButtonClick(item, valClass) {
+        const activeButtons = document.querySelectorAll(`.${valClass} .active`);
+    
         if (!item.classList.contains('active')) {
             if (activeButtons.length > 0) {
                 activeButtons[0].classList.remove('active');
@@ -66,35 +78,44 @@ document.addEventListener("DOMContentLoaded", function() {
             item.classList.add('active');
             item.style.display = 'inline-block';
         }
-        document.querySelectorAll(`.${ulClass} button`).forEach(button => {
+    
+        document.querySelectorAll(`.${valClass} button`).forEach(button => {
             if (button !== item && !button.classList.contains('active')) {
                 button.style.display = 'inline-block';
             }
         });
-        if (ulClass === 'ul1') {
+    
+        if (valClass === 'val1') {
             fromCurrency = item.innerText;
-        } else if (ulClass === 'ul2') {
+        } else if (valClass === 'val2') {
             toCurrency = item.innerText;
         }
     }
-    ul1Lis.forEach(li => {
+    
+    allLiElements.forEach(li => {
         li.addEventListener('click', function() {
-            buttonClick(li, 'ul1');
+            handleButtonClick(li, 'val1');
             updateCurrency({ target: li });
         });
     });
-    ul2Lis.forEach(li2 => {
+    
+    allLiElements2.forEach(li2 => {
         li2.addEventListener('click', function() {
-            buttonClick(li2, 'ul2');
+            handleButtonClick(li2, 'val2');
             updateCurrency({ target: li2 });
         });
     });
-function activeButtons() {
-        const rub1Button = document.querySelector('.rub1');
-        const usd2Button = document.querySelector('.usd2');
-        rub1Button.classList.add('active');
-        usd2Button.classList.add('active');
-        changeCurrency(fromCurrency, toCurrency, 1, myInputs[1]);
+    
+    function setDefaultActiveButtons() {
+        const ru1Button = document.querySelector('.ru1');
+        const us2Button = document.querySelector('.us2');
+    
+        ru1Button.classList.add('active');
+        us2Button.classList.add('active');
+        getExchangeRate(fromCurrency, toCurrency, 0, [amountInputs[0],amountInputs[1]]);
+    
     }
-    activeButtons();
-});
+    
+    setDefaultActiveButtons();
+    
+    });
