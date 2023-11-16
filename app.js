@@ -94,7 +94,7 @@ function activeButtons() {
         const usd2Button = document.querySelector('.usd2');
         rub1Button.classList.add('active');
         usd2Button.classList.add('active');
-        changeCurrency(fromCurrency, toCurrency, 1,myInputs[1]);
+        changeCurrency(fromCurrency, toCurrency, 1, myInputs[1]);
     }
     activeButtons();
 });
